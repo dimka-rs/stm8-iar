@@ -7,20 +7,20 @@
     <name>Debug</name>
     <outputs>
       <file>$PROJ_DIR$\main.c</file>
+      <file>$PROJ_DIR$\Debug\Obj\test-project.pbd</file>
+      <file>$PROJ_DIR$\Debug\Exe\test-project.out</file>
+      <file>$TOOLKIT_DIR$\inc\io_macros.h</file>
       <file>$PROJ_DIR$\STM8S103F3.C</file>
       <file>$PROJ_DIR$\Debug\Obj\main.pbi</file>
       <file>$PROJ_DIR$\swtimer.c</file>
-      <file>$PROJ_DIR$\swtimer.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\test-project.pbd</file>
-      <file>$PROJ_DIR$\Debug\Exe\test-project.out</file>
       <file>$PROJ_DIR$\Debug\Obj\swtimer.o</file>
-      <file>$TOOLKIT_DIR$\inc\c\DLib_Defaults.h</file>
-      <file>$TOOLKIT_DIR$\inc\io_macros.h</file>
       <file>$PROJ_DIR$\Debug\Obj\STM8S103F3.pbi</file>
-      <file>$PROJ_DIR$\Debug\Obj\swtimer.pbi</file>
+      <file>$PROJ_DIR$\swtimer.h</file>
       <file>$PROJ_DIR$\Debug\Obj\main.o</file>
-      <file>$TOOLKIT_DIR$\inc\c\ycheck.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Defaults.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\swtimer.pbi</file>
       <file>$TOOLKIT_DIR$\inc\iostm8s103f3.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\ycheck.h</file>
       <file>$TOOLKIT_DIR$\inc\c\xencoding_limits.h</file>
       <file>$TOOLKIT_DIR$\inc\c\yvals.h</file>
       <file>$TOOLKIT_DIR$\inc\c\stdint.h</file>
@@ -29,10 +29,10 @@
       <file>$TOOLKIT_DIR$\inc\c\DLib_Threads.h</file>
       <file>$TOOLKIT_DIR$\lib\dlstm8smn.a</file>
       <file>$TOOLKIT_DIR$\config\lnkstm8s103f3.icf</file>
-      <file>$PROJ_DIR$\Debug\List\test-project.map</file>
-      <file>$TOOLKIT_DIR$\lib\dbgstm8smd.a</file>
-      <file>$PROJ_DIR$\Debug\Obj\STM8S103F3.__cstat.et</file>
       <file>$PROJ_DIR$\Debug\Obj\main.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\List\test-project.map</file>
+      <file>$PROJ_DIR$\Debug\Obj\STM8S103F3.__cstat.et</file>
+      <file>$TOOLKIT_DIR$\lib\dbgstm8smd.a</file>
       <file>$PROJ_DIR$\Debug\Obj\swtimer.__cstat.et</file>
     </outputs>
     <file>
@@ -40,7 +40,7 @@
       <outputs>
         <tool>
           <name>ILINK</name>
-          <file> 6 23</file>
+          <file> 2 24</file>
         </tool>
       </outputs>
     </file>
@@ -49,25 +49,40 @@
       <outputs>
         <tool>
           <name>ICCSTM8</name>
-          <file> 12</file>
+          <file> 10</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 2</file>
+          <file> 5</file>
         </tool>
         <tool>
           <name>__cstat</name>
-          <file> 26</file>
+          <file> 23</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>ICCSTM8</name>
-          <file> 14 9</file>
+          <file> 13 3</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 9 14</file>
+          <file> 3 13</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Exe\test-project.out</name>
+      <outputs>
+        <tool>
+          <name>ILINK</name>
+          <file> 24</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ILINK</name>
+          <file> 22 10 21 26</file>
         </tool>
       </inputs>
     </file>
@@ -76,7 +91,7 @@
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 10</file>
+          <file> 8</file>
         </tool>
         <tool>
           <name>__cstat</name>
@@ -86,11 +101,11 @@
       <inputs>
         <tool>
           <name>ICCSTM8</name>
-          <file> 14 9</file>
+          <file> 13 3</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 9 14</file>
+          <file> 3 13</file>
         </tool>
       </inputs>
     </file>
@@ -103,7 +118,7 @@
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 11</file>
+          <file> 12</file>
         </tool>
         <tool>
           <name>__cstat</name>
@@ -113,26 +128,11 @@
       <inputs>
         <tool>
           <name>ICCSTM8</name>
-          <file> 4 17 13 16 8 19 18 15 20</file>
+          <file> 9 17 14 16 11 19 18 15 20</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 8 13 17 20 16 15 4 19 18</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\Debug\Exe\test-project.out</name>
-      <outputs>
-        <tool>
-          <name>ILINK</name>
-          <file> 23</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>ILINK</name>
-          <file> 22 12 21 24</file>
+          <file> 11 14 17 20 16 15 9 19 18</file>
         </tool>
       </inputs>
     </file>
