@@ -9,60 +9,64 @@
       <file>$PROJ_DIR$\main.c</file>
       <file>$PROJ_DIR$\Debug\Exe\servo-tester.out</file>
       <file>$PROJ_DIR$\Debug\Obj\servo-tester.pbd</file>
-      <file>$PROJ_DIR$\Debug\Obj\main.o</file>
-      <file>$PROJ_DIR$\Debug\Obj\main.pbi</file>
-      <file>$TOOLKIT_DIR$\inc\iostm8s103f3.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\main.__cstat.et</file>
-      <file>$TOOLKIT_DIR$\lib\dbgstm8smd.a</file>
       <file>$PROJ_DIR$\Debug\List\servo-tester.map</file>
-      <file>$TOOLKIT_DIR$\inc\io_macros.h</file>
-      <file>$TOOLKIT_DIR$\lib\dlstm8smn.a</file>
+      <file>$PROJ_DIR$\Debug\Obj\main.o</file>
       <file>$TOOLKIT_DIR$\config\lnkstm8s103f3.icf</file>
+      <file>$TOOLKIT_DIR$\inc\io_macros.h</file>
+      <file>$TOOLKIT_DIR$\lib\dbgstm8smd.a</file>
+      <file>$PROJ_DIR$\Debug\Obj\main.__cstat.et</file>
+      <file>$TOOLKIT_DIR$\inc\iostm8s103f3.h</file>
+      <file>$TOOLKIT_DIR$\lib\dlstm8smn.a</file>
+      <file>$PROJ_DIR$\Debug\Obj\main.pbi</file>
     </outputs>
-    <file>
-      <name>[ROOT_NODE]</name>
-      <outputs>
-        <tool>
-          <name>ILINK</name>
-          <file> 1 8</file>
-        </tool>
-      </outputs>
-    </file>
     <file>
       <name>$PROJ_DIR$\main.c</name>
       <outputs>
         <tool>
           <name>ICCSTM8</name>
-          <file> 3</file>
-        </tool>
-        <tool>
-          <name>BICOMP</name>
           <file> 4</file>
         </tool>
         <tool>
+          <name>BICOMP</name>
+          <file> 11</file>
+        </tool>
+        <tool>
           <name>__cstat</name>
-          <file> 6</file>
+          <file> 8</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>ICCSTM8</name>
-          <file> 5 9</file>
+          <file> 9 6</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 6 9</file>
         </tool>
       </inputs>
+    </file>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>ILINK</name>
+          <file> 1 3</file>
+        </tool>
+      </outputs>
     </file>
     <file>
       <name>$PROJ_DIR$\Debug\Exe\servo-tester.out</name>
       <outputs>
         <tool>
           <name>ILINK</name>
-          <file> 8</file>
+          <file> 3</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>ILINK</name>
-          <file> 11 3 10 7</file>
+          <file> 5 4 10 7</file>
         </tool>
       </inputs>
     </file>
@@ -71,40 +75,39 @@
     <name>Release</name>
     <outputs>
       <file>$PROJ_DIR$\main.c</file>
-      <file>$TOOLKIT_DIR$\inc\iostm8s103f3.h</file>
       <file>$TOOLKIT_DIR$\inc\io_macros.h</file>
-      <file>$PROJ_DIR$\Release\Obj\servo-tester.pbd</file>
+      <file>$TOOLKIT_DIR$\inc\iostm8s103f3.h</file>
       <file>$PROJ_DIR$\Release\Obj\main.pbi</file>
       <file>$PROJ_DIR$\Release\Obj\main.o</file>
       <file>$PROJ_DIR$\Release\Exe\servo-tester.out</file>
     </outputs>
     <file>
-      <name>[ROOT_NODE]</name>
-      <outputs>
-        <tool>
-          <name>ILINK</name>
-          <file> 6</file>
-        </tool>
-      </outputs>
-    </file>
-    <file>
       <name>$PROJ_DIR$\main.c</name>
       <outputs>
         <tool>
           <name>ICCSTM8</name>
-          <file> 5</file>
+          <file> 4</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 4</file>
+          <file> 3</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 2 1</file>
+          <file> 1 2</file>
         </tool>
       </inputs>
+    </file>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>ILINK</name>
+          <file> 5</file>
+        </tool>
+      </outputs>
     </file>
     <forcedrebuild>
       <name>[MULTI_TOOL]</name>

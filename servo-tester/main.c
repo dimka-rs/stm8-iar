@@ -1,5 +1,3 @@
-#include "iostm8s103f3.h"
-
 /*
 Ports:
 A1 OSCIN
@@ -20,7 +18,14 @@ D5 DS
 D6 STCP
 */
 
+#include "iostm8s103f3.h"
 #define ClockDelay 1
+#define DefaultARR 20000; //preload = 20k ticks = 20 ms = 50 Hz
+#define DefaultCCR 1500; //compare value = impulse length = 1.5 ms
+#define DefaultCnt 150*4; //start with 1.5 ms interval
+
+unsigned char enc, encp;
+unsigned int cnt;
 
 extern const char DigitsTable[0x28] = {
 /*00 - 0*/ 0xFC,
@@ -66,8 +71,6 @@ extern const char DigitsTable[0x28] = {
 };
 
 
-
-
 void Delay(unsigned long max_delay) {
   for (unsigned long delay_count=0; delay_count<max_delay; delay_count++);
 };
@@ -92,49 +95,82 @@ void SendByte(unsigned char ByteToSend) {
   Delay(ClockDelay);
 };
 
-void BlinkLed() {
-  PB_ODR_bit.ODR5 = 0; //led on
-  Delay(10000);
-  PB_ODR_bit.ODR5 = 1; //led off
-  Delay(10000);
-};
-
-/* timer interrups handler */
-/*
-  TIM2_SR1
-  Bit 2 CC2IF: Capture/compare 2 interrupt flag - clear writing 0
-  Bit 0 UIF: Update interrupt flag - clear writing 0
-
-  #pragma vector = TIM1_OVR_UIF_vector
-  __interrupt void TIM1_OVR_UIF_handler(void)
-  {
-    if (TIM1_SR1_UIF==1){
-      TIM1_SR1_UIF = 0;             // Очистка флага прерывания по обновлению
-      PD_ODR ^= MASK_PD_ODR_ODR0;   // Переключение уровня напряжения на ножке на противоположное
-    }  
+/* Port A button interrupt handler */
+#pragma vector = EXTI0_vector
+  __interrupt void EXTI0_handler(void){
+    cnt=DefaultCnt;
   }
 
-*/
+/* Port B encoder interrupt handler */
+#pragma vector = EXTI1_vector
+  __interrupt void EXTI1_handler(void){
+    enc = PB_IDR/16; //bits 4-5
+    switch(enc) {
+      case 0:
+        if (encp == 2) {cnt++;}
+        if (encp == 1) {cnt--;}
+        break;
+      case 1:
+        if (encp == 0) {cnt++;}
+        if (encp == 3) {cnt--;}
+        break;
+      case 2:
+        if (encp == 3) {cnt++;}
+        if (encp == 0) {cnt--;}
+        break;
+      case 3:
+        if (encp == 1) {cnt++;}
+        if (encp == 2) {cnt--;}
+        break;
+    }
+    encp = enc;
+  }
+
+/* timer interrups handler */
+  #pragma vector = TIM2_CAPCOM_CC2IF_vector
+  __interrupt void TIM2_CAPCOM_CC2IF_handler(void) {
+    TIM2_SR1_bit.CC2IF = 0; //clear interrupt flag
+    //write new ccr, will be updated on overflow
+    unsigned int ccr = cnt/4*10;
+    TIM2_CCR2H = ccr/256; // higher byte first
+    TIM2_CCR2L = ccr%256; // lower byte last
+  
+  }
+  
+  #pragma vector = TIM2_OVR_UIF_vector
+  __interrupt void TIM2_OVR_UIF_handler(void) {
+    TIM2_SR1_bit.UIF = 0; //clear interrupt flag
+    //TODO: something
+  }
+
+
 
 int main( void )
 {
-  /* clock setup
-  1. Enable the switching mechanism by setting the SWEN bit in the Switch control
-  register (CLK_SWCR).
-  2.  Write the 8-bit value used to select the target clock source in the Clock
-  master switch register (CLK_SWR). The SWBSY bit in the CLK_SWCR register is set
-  by hardware, and the target source oscillator starts. The old clock source
-  continues to drive the CPU and peripherals. 
-  */
+  /* vars setup */
+  char DisplayString[5];
+  cnt=DefaultCnt;
+  enc=3;
+  encp=3;
+  unsigned char b,c,d = 0;
+  DisplayString[0] = DigitsTable[0x00];
+  DisplayString[1] = DigitsTable[0x01];
+  DisplayString[2] = DigitsTable[0x02];
+  DisplayString[3] = DigitsTable[0x03];
+  DisplayString[4] = DigitsTable[0x16];
+
+  /* clock setup */
   CLK_SWCR_bit.SWEN = 1; //Autoswitch clock source
   CLK_SWR = 0xB4; // HSE selected as master clock source
-
   /* TODO: CSS function enabled: (CSSEN = 1 in the CLK_CSSR register) */
   
   /* ports setup */
-  PB_DDR = 0x20; //out
-  PB_CR1 = 0x20; //push-pull
-  PB_CR2 = 0x00; //slow
+  PA_DDR = 0x00; //input
+  PA_CR1 = 0x08; //pull-up
+  PA_CR2 = 0x08; //interrupt enabled
+  PB_DDR = 0x00; //input
+  PB_CR1 = 0x30; //pull-up
+  PB_CR2 = 0x30; //interrupt enabled
   PC_ODR = 0xFF; //LED cathodes off
   PC_DDR = 0xFF; //out
   PC_CR1 = 0xFF; //push-pull
@@ -146,45 +182,47 @@ int main( void )
 
   /* timer setup */
   TIM2_CR1_bit.ARPE = 1; //auto preload to keep frequency
-  unsigned int arr = 20000; //preload = 20k ticks = 20 ms = 50 Hz
+  unsigned int arr = DefaultARR; //preload defines frequency
   TIM2_ARRH = arr/256; // higher byte first
   TIM2_ARRL = arr%256; // lower byte last
-  //TIM2_IER_bit.CC2IE = 1; //CH2 Capture/compare interrupt enabled
+  TIM2_IER_bit.CC2IE = 1; //CH2 Capture/compare interrupt enabled
   //TIM2_IER_bit.UIE = 1; //Update interrupt enabled
   TIM2_CCMR2_bit.CC2S = 0; //output, writable only if CC2E = 0 in TIM2_CCER1
   TIM2_CCMR2_bit.OC2M = 6; //pwm1
   TIM2_CCMR2_bit.OC2PE = 1; //preload enable
-  unsigned int ccr = 1500; //compare value = impulse length = 1.5 ms
+  unsigned int ccr = DefaultCCR; //compare defines length
   TIM2_CCR2H = ccr/256; // higher byte first
   TIM2_CCR2L = ccr%256; // lower byte last
   TIM2_PSCR_bit.PSC = 4; //prescaler = 16 = 2^4 
   TIM2_CCER1_bit.CC2E = 1; //compare ch2 enable
   TIM2_EGR_bit.UG = 1; //Update event to update regs
-  
   TIM2_CR1_bit.CEN = 1; //counter enabled
-  //The UEV can be disabled by setting the UDIS bit in the TIM1_CR1 ?
-
   
+  /* interrupts setup */
+  ITC_SPR1_bit.VECT3SPR = 1;// EXTI0/Port A priority level 1, lower - button
+  ITC_SPR2_bit.VECT4SPR = 1;// EXTI1/Port B priority level 1, lower - encoder
+  ITC_SPR4_bit.VECT13SPR = 0; //TIM2 upd/ovf, priority level 2, higher
+  ITC_SPR4_bit.VECT14SPR = 0; //TIM2 capt/comp, priority level 2, higher
+  EXTI_CR1_bit.PAIS = 2; //port A interrupt on fall only (pulled up)
+  EXTI_CR1_bit.PBIS = 3; //port B interrupt on both rise and fall
+  asm("RIM"); //enable interrupts
   
-  char DisplayString[5];
-  DisplayString[0] = DigitsTable[0x01];
-  DisplayString[1] = DigitsTable[0x26];
-  DisplayString[2] = DigitsTable[0x02];
-  DisplayString[3] = DigitsTable[0x01];
-  DisplayString[4] = DigitsTable[0x16];
-  
-  // blink led on PB5 twice when ready
-  BlinkLed();
-  BlinkLed();
   while(1) {
+    //TODO: move LED update to interrupt, use asm("WFI"); to wait
     for(unsigned char CurrDigit=3;CurrDigit<8;CurrDigit++) {
       PD_ODR_bit.ODR2 = 1;
-      DisplayString[0] = DigitsTable[CurrDigit];
+      b=cnt/4/100%10;
+      c=cnt/4/10%10;
+      d=cnt/4%10;
+      DisplayString[0] = DigitsTable[b];
+      DisplayString[1] = DigitsTable[0x26];
+      DisplayString[2] = DigitsTable[c];
+      DisplayString[3] = DigitsTable[d];
       SendByte(DisplayString[CurrDigit-3]); //Set segs
       PC_ODR = 0xff & ~(1 << CurrDigit); //Select digit
       PD_ODR_bit.ODR2 = 0; //~OE low, 595 on, show digit
       Delay(100);
     };
   };
-  //return 0;
+  //return 0; //never reached
 }
