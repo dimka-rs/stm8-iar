@@ -1,6 +1,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "iostm8l152c6.h"
 #include <intrinsics.h>
+#include "nrf24.h"
+
+char pipe_addr[]={0xA1,0xA2,0xA3,0xA4,0xA5};
+char data_buf[32]="";
 
 void init(){
     // SYS: HSI/2 = 8 MHz TODO!
@@ -94,111 +98,28 @@ void init(){
   PE_CR2_bit.C27 = 0;
 }
 
-
-void Delayms(unsigned int n){
-  while (n-- > 0) {
-    unsigned int m = 2000;
-    while (m-- > 0);
+void PrintBuffer(char* buffer, int size){
+  for (unsigned int i=0; i<size; i++) {
+    PrintByte(buffer[i]);
+    PrintString("\n");
   }
-}
-
-void PrintChar(unsigned char data){
-  while(!(USART1_SR_bit.TXE));
-  USART1_DR=data;
-}
-
-void PrintByte(unsigned char data){
-  unsigned char high, low;
-  high = data / 16;
-  if (high < 10) {
-    high = high + 48; //digit
-  } else {
-    high = high + 55; //letter
-  }
-  while(!(USART1_SR_bit.TXE));
-  USART1_DR=high;
-  low = data % 16;
-  if (low < 10) {
-    low = low + 48; //digit
-  } else {
-    low = low + 55; //letter
-  }
-  while(!(USART1_SR_bit.TXE));
-  USART1_DR=low;
-}
-
-unsigned char SpiReadReg(unsigned char reg){
-  PC_ODR_bit.ODR7 = 1; //blue led on
-  unsigned char data;
-  unsigned char status;
-  SPI1_CR1_bit.SPE = 1; //enable
-  PB_ODR_bit.ODR4 = 0; //cs low
-  SPI1_DR = reg;
-  while(!(SPI1_SR_bit.RXNE));
-  status = SPI1_DR;
-  SPI1_DR = 0xFF;
-  while(!(SPI1_SR_bit.RXNE));
-  data = SPI1_DR;
-  PB_ODR_bit.ODR4 = 1; //cs high
-  PC_ODR_bit.ODR7 = 0; //blue led on
-  SPI1_CR1_bit.SPE = 0; //disable
-  return data;
-}
-
-void SpiWriteReg(unsigned char reg, unsigned char data){
-  reg += 0x20;
-  PC_ODR_bit.ODR7 = 1; //blue led on
-  unsigned char status;
-  SPI1_CR1_bit.SPE = 1; //enable
-  PB_ODR_bit.ODR4 = 0; //cs low
-  SPI1_DR = reg;
-  while(!(SPI1_SR_bit.RXNE));
-  status = SPI1_DR;
-  SPI1_DR = data;
-  while(!(SPI1_SR_bit.RXNE));
-  status = SPI1_DR;
-  PB_ODR_bit.ODR4 = 1; //cs high
-  PC_ODR_bit.ODR7 = 0; //blue led on
-  SPI1_CR1_bit.SPE = 0; //disable
 }
 
 void main(void)
 {
   init();
-  PrintChar('0');
-  PrintChar('x');
-  PrintByte(0x5B);
-  PrintChar('\n');
+  PrintString("\nStarted");
+  PrintString("\nBuffer1:\n");
+  PrintBuffer(pipe_addr, sizeof(pipe_addr));
+  NrfWriteAddr(RX_ADDR_P0, pipe_addr, sizeof(pipe_addr));
+  NrfReadAddr(RX_ADDR_P0, pipe_addr, sizeof(pipe_addr));
+  PrintString("\nBuffer2:\n");
+  PrintBuffer(pipe_addr, sizeof(pipe_addr));
   
- 
   /* Infinite loop */
-  unsigned char i = 0;
   while (1)
   {
     PE_ODR_bit.ODR7 = ~PE_ODR_bit.ODR7;
-    PrintChar('s');
-    PrintChar('s');
-    PrintChar('m');
-    PrintChar('m');
-    PrintChar('h');
-    PrintChar('h');
-    PrintChar('D');
-    PrintChar('D');
-    PrintChar('M');
-    PrintChar('M');
-    PrintChar('Y');
-    PrintChar('Y');
-    PrintChar('-');
-    PrintChar('W');
-    PrintChar('\n');
-    PrintByte(RTC_TR1);
-    PrintByte(RTC_TR2);
-    PrintByte(RTC_TR3);
-    PrintByte(RTC_DR1);
-    PrintByte(RTC_DR2&0x1F);
-    PrintByte(RTC_DR3);
-    PrintByte(RTC_DR2/32);
-    PrintChar('\n');
     Delayms(1000);
   }
 }

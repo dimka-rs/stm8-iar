@@ -2,30 +2,52 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>2262067934</fileChecksum>
+  <fileChecksum>4177565358</fileChecksum>
   <configuration>
     <name>Debug</name>
     <outputs>
       <file>$PROJ_DIR$\main.c</file>
+      <file>$PROJ_DIR$\nrf24.c</file>
       <file>$TOOLKIT_DIR$\inc\io_macros.h</file>
-      <file>$PROJ_DIR$\iostm8l152c6.h</file>
       <file>$TOOLKIT_DIR$\inc\c\intrinsics.h</file>
-      <file>$PROJ_DIR$\Debug\Obj\sensor-demo.pbd</file>
+      <file>$TOOLKIT_DIR$\config\lnkstm8l152c6.icf</file>
+      <file>$PROJ_DIR$\iostm8l152c6.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\nrf24.o</file>
+      <file>$TOOLKIT_DIR$\lib\dlstm8smn.a</file>
+      <file>$PROJ_DIR$\Debug\Obj\nrf24.pbi</file>
       <file>$PROJ_DIR$\Debug\Exe\sensor-demo.out</file>
-      <file>$PROJ_DIR$\Debug\Obj\main.o</file>
+      <file>$PROJ_DIR$\Debug\Obj\sensor-demo.pbd</file>
       <file>$PROJ_DIR$\Debug\Obj\main.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\main.o</file>
+      <file>$TOOLKIT_DIR$\lib\dbgstm8smd.a</file>
+      <file>$PROJ_DIR$\nrf24.h</file>
+      <file>$PROJ_DIR$\Debug\List\sensor-demo.map</file>
     </outputs>
     <file>
-      <name>[ROOT_NODE]</name>
+      <name>$PROJ_DIR$\main.c</name>
       <outputs>
         <tool>
-          <name>ILINK</name>
-          <file> 5</file>
+          <name>ICCSTM8</name>
+          <file> 12</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 11</file>
         </tool>
       </outputs>
+      <inputs>
+        <tool>
+          <name>ICCSTM8</name>
+          <file> 5 2 3 14</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 14 3 2 5</file>
+        </tool>
+      </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\main.c</name>
+      <name>$PROJ_DIR$\nrf24.c</name>
       <outputs>
         <tool>
           <name>ICCSTM8</name>
@@ -33,13 +55,41 @@
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 7</file>
+          <file> 8</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
+          <name>ICCSTM8</name>
+          <file> 14 5 2</file>
+        </tool>
+        <tool>
           <name>BICOMP</name>
-          <file> 1 3 2</file>
+          <file> 2 5 14</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>ILINK</name>
+          <file> 9 15</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Exe\sensor-demo.out</name>
+      <outputs>
+        <tool>
+          <name>ILINK</name>
+          <file> 15</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ILINK</name>
+          <file> 4 12 6 7 13</file>
         </tool>
       </inputs>
     </file>

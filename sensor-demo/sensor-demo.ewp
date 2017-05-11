@@ -1591,6 +1591,9 @@
   <file>
     <name>$PROJ_DIR$\main.c</name>
   </file>
+  <file>
+    <name>$PROJ_DIR$\nrf24.c</name>
+  </file>
 </project>
 
 
