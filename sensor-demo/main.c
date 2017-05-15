@@ -3,8 +3,12 @@
 #include <intrinsics.h>
 #include "nrf24.h"
 
-char pipe_addr[]={0xA1,0xA2,0xA3,0xA4,0xA5};
-char data_buf[32]="";
+#define ADDR_LEN 5
+char pipe_addr[]={0xB5,0xB4,0xB3,0xB2,0xB1};
+#define PAYLOAD_LEN 8
+char data_buf[PAYLOAD_LEN]="";
+
+
 
 void init(){
     // SYS: HSI/2 = 8 MHz TODO!
@@ -98,28 +102,67 @@ void init(){
   PE_CR2_bit.C27 = 0;
 }
 
-void PrintBuffer(char* buffer, int size){
-  for (unsigned int i=0; i<size; i++) {
-    PrintByte(buffer[i]);
-    PrintString("\n");
-  }
+void init_common(){
+  NrfWriteReg(SETUP_AW, ADDR_LEN-2); // address width (1 - 3 bytes, 2 - 4 bytes, 3 - 5 bytes)
+  NrfWriteReg(SETUP_RETR, 0x5A); // retr in 1500 us, up to 10 attempts
+  NrfWriteReg(RF_CH, 0x4C); // channel 2400 + 76 MHz
+  NrfWriteReg(RF_SETUP, 0x03); // 1 Mbit, -12 dBm, dontcare=1
+  //NrfWriteReg(0x50, 0x73); // some magic dumped from arduino
+  NrfWriteReg(FEATURE, 0x00); // disable all features
+  NrfWriteReg(DYNPD, 0x00); // disable dynamic payload
+  NrfWriteReg(EN_AA, 0x03); // enable autoack on pipe 0,1
 }
+
+void init_send(){
+  init_common();
+  NrfWriteReg(CONFIG, 0x0E); // EN_CRC 2 Bytes, PWRUP, PTX
+  NrfWriteAddr(TX_ADDR, pipe_addr, ADDR_LEN); // tx addr
+  NrfWriteAddr(RX_ADDR_P0, pipe_addr, ADDR_LEN); // pipe 0 rx addr
+  NrfWriteReg(RX_PW_P0, PAYLOAD_LEN); // payload len for pipe 0
+  NrfWriteReg(EN_RXADDR, 0x01); // enable pipe 0
+  NrfFlushTx();
+}
+
 
 void main(void)
 {
+  char txok = 1; //set to 1 to renew payload
   init();
   PrintString("\nStarted");
-  PrintString("\nBuffer1:\n");
-  PrintBuffer(pipe_addr, sizeof(pipe_addr));
-  NrfWriteAddr(RX_ADDR_P0, pipe_addr, sizeof(pipe_addr));
-  NrfReadAddr(RX_ADDR_P0, pipe_addr, sizeof(pipe_addr));
-  PrintString("\nBuffer2:\n");
-  PrintBuffer(pipe_addr, sizeof(pipe_addr));
+
+  init_send();
   
   /* Infinite loop */
   while (1)
   {
-    PE_ODR_bit.ODR7 = ~PE_ODR_bit.ODR7;
+    if (txok) {
+      PrintString("\nData: ");
+      for (char i=0; i<PAYLOAD_LEN;i++){
+        PrintByte(i+48);
+        data_buf[i]=i+48; //send ascii codes for digits
+      }
+      //if tx successful then clear flag and write new payload
+      PrintString("\nClear TX_DS: ");
+      NrfWriteReg(STATUS, NrfReadReg(STATUS)|(1<<5));
+      PrintByte(NrfReadReg(STATUS));
+      NrfWritePayload(data_buf, PAYLOAD_LEN);
+    }
+    PrintString("\nBefore: STATUS: ");
+    PrintByte(NrfReadReg(STATUS));
+    PrintString(". FIFO_STATUS: ");
+    PrintByte(NrfReadReg(FIFO_STATUS));
+    NrfEnable();
+    while(!((NrfReadReg(STATUS))&0xF0)); //wait for some flag to be set
+    NrfDisable();
+    txok = NrfReadReg(STATUS);
+    PrintString("\nAfter:  STATUS: ");
+    PrintByte(txok);
+    PrintString(". FIFO_STATUS: ");
+    PrintByte(NrfReadReg(FIFO_STATUS));
+    txok = txok&(1<<5); //set status only if TX_DS flag is set
+    PrintString("\nTxOk: ");
+    PrintByte(txok);
+    PE_ODR_bit.ODR7 = ~PE_ODR_bit.ODR7; // blink LED
     Delayms(1000);
   }
 }

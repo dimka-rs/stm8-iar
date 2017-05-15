@@ -31,6 +31,7 @@
 void Delayms(unsigned int n);
 void PrintString(char* data);
 void PrintByte(unsigned char data);
+void PrintBuffer(char* buffer, int size);
 
 // SPI functions
 void SpiStart();
@@ -46,7 +47,8 @@ void NrfReadPayload(char* rx_buffer, unsigned char len); // R_RX_PAYLOAD: 0110 0
 void NrfWritePayload(char* tx_buffer, unsigned char len); // W_TX_PAYLOAD: 1010 0000, 1 to 32 LSByte first
 void NrfFlushTx(); // FLUSH_TX: 1110 0001
 void NrfFlushRx(); // FLUSH_RX: 1110 0010
-void NrfEnable(unsigned char enable);
+void NrfEnable();
+void NrfDisable();
 
 /* TODO:
 reusetxpl() // REUSE_TX_PL: 1110 0011

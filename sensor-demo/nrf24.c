@@ -42,6 +42,13 @@ void PrintByte(unsigned char data){
   USART1_DR=low;
 }
 
+void PrintBuffer(char* buffer, int size){
+  for (unsigned int i=0; i<size; i++) {
+    PrintByte(buffer[i]);
+    PrintString("\n");
+  }
+}
+
 //SPI functions
 void SpiStart(){
   SPI1_CR1_bit.SPE = 1; //spi enable
@@ -70,7 +77,7 @@ unsigned char NrfReadReg(unsigned char reg){
   return read;
 }
 
-void SpiWriteReg(unsigned char reg, unsigned char data){
+void NrfWriteReg(unsigned char reg, unsigned char data){
   volatile unsigned char read;
   reg += 0x20; //add write flag
   SpiStart();
@@ -82,7 +89,7 @@ void SpiWriteReg(unsigned char reg, unsigned char data){
 void NrfReadAddr(unsigned char reg, char* addr, unsigned char addr_size){
   //only 0x0A, 0x0B, 0x10 are valid addresses
   volatile unsigned char read;
-  PrintString("Reading from ");
+  PrintString("\nReading from ");
   PrintByte(reg);
   PrintString(": ");
   SpiStart();
@@ -92,14 +99,13 @@ void NrfReadAddr(unsigned char reg, char* addr, unsigned char addr_size){
     PrintByte(addr[addr_size]);
   }
   SpiStop();
-  PrintString(".\n");
 }
 
 void NrfWriteAddr(unsigned char reg, char* addr, unsigned char addr_size){
   //only 0x0A, 0x0B, 0x10 are valid addresses
   volatile unsigned char read;
   reg += 0x20; //add write flag
-  PrintString("Writing to ");
+  PrintString("\nWriting to ");
   PrintByte(reg);
   PrintString(": ");
   SpiStart();
@@ -108,15 +114,42 @@ void NrfWriteAddr(unsigned char reg, char* addr, unsigned char addr_size){
     PrintByte(addr[addr_size]);
     SpiSendByte(addr[addr_size]);
   }
-  PrintString(".\n");
   SpiStop();
 }
 
+void NrfReadPayload(char* buffer, unsigned char len){
+  // R_RX_PAYLOAD: 0110 0001, 1-32 LSByte first
+}
 
-void NrfEnable(unsigned char enable){
-  if (enable) {
-    PB_ODR_bit.ODR3 = 1;
-  } else {
-    PB_ODR_bit.ODR3 = 0;
+void NrfWritePayload(char* buffer, unsigned char len){
+  // W_TX_PAYLOAD: 1010 0000, 1 to 32 LSByte first
+  SpiStart();
+  SpiSendByte(0xA0);
+  PrintString("\nPayload: ");
+  while(len--){
+    PrintByte(buffer[len]);
+    SpiSendByte(buffer[len]);
   }
+  SpiStop();
+}
+
+void NrfFlushTx(){
+  // FLUSH_TX: 1110 0001
+  SpiStart();
+  SpiSendByte(0xE1);
+  SpiStop();
+}
+
+void NrfFlushRx(){
+  // FLUSH_RX: 1110 0010
+  SpiStart();
+  SpiSendByte(0xE2);
+  SpiStop();
+}
+
+void NrfEnable(){
+    PB_ODR_bit.ODR3 = 1;
+}
+void NrfDisable(){
+    PB_ODR_bit.ODR3 = 0;
 }
