@@ -8,27 +8,36 @@
     <outputs>
       <file>$PROJ_DIR$\main.c</file>
       <file>$PROJ_DIR$\nrf24.c</file>
-      <file>$TOOLKIT_DIR$\config\lnkstm8l152c6.icf</file>
-      <file>$PROJ_DIR$\Debug\Obj\main.pbi</file>
-      <file>$PROJ_DIR$\nrf24.h</file>
       <file>$TOOLKIT_DIR$\inc\c\intrinsics.h</file>
-      <file>$TOOLKIT_DIR$\lib\dlstm8smn.a</file>
-      <file>$PROJ_DIR$\Debug\Obj\nrf24.o</file>
-      <file>$PROJ_DIR$\Debug\Exe\sensor-demo.out</file>
-      <file>$PROJ_DIR$\Debug\Obj\nrf24.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\main.pbi</file>
       <file>$PROJ_DIR$\Debug\Obj\sensor-demo.pbd</file>
+      <file>$TOOLKIT_DIR$\config\lnkstm8l152c6.icf</file>
+      <file>$PROJ_DIR$\Debug\Obj\nrf24.o</file>
+      <file>$PROJ_DIR$\Debug\Obj\nrf24.pbi</file>
+      <file>$PROJ_DIR$\Debug\Exe\sensor-demo.out</file>
+      <file>$TOOLKIT_DIR$\lib\dlstm8smn.a</file>
+      <file>$PROJ_DIR$\nrf24.h</file>
+      <file>$TOOLKIT_DIR$\lib\dbgstm8smd.a</file>
       <file>$TOOLKIT_DIR$\inc\io_macros.h</file>
       <file>$PROJ_DIR$\Debug\Obj\main.o</file>
       <file>$PROJ_DIR$\iostm8l152c6.h</file>
-      <file>$TOOLKIT_DIR$\lib\dbgstm8smd.a</file>
       <file>$PROJ_DIR$\Debug\List\sensor-demo.map</file>
+      <file>$TOOLKIT_DIR$\inc\c\ysizet.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\yvals.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\string.h</file>
+      <file>$TOOLKIT_DIR$\lib\dlstm8smn.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Threads.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Product.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\DLib_Defaults.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\ycheck.h</file>
+      <file>$TOOLKIT_DIR$\inc\c\xencoding_limits.h</file>
     </outputs>
     <file>
       <name>$PROJ_DIR$\main.c</name>
       <outputs>
         <tool>
           <name>ICCSTM8</name>
-          <file> 12</file>
+          <file> 13</file>
         </tool>
         <tool>
           <name>BICOMP</name>
@@ -38,11 +47,11 @@
       <inputs>
         <tool>
           <name>ICCSTM8</name>
-          <file> 13 11 5 4</file>
+          <file> 14 12 2 18 23 17 22 19 21 24 20 16 10</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 4 5 11 13</file>
+          <file> 12 22 20 18 2 10 17 23 14 16 24 19 21</file>
         </tool>
       </inputs>
     </file>
@@ -51,21 +60,21 @@
       <outputs>
         <tool>
           <name>ICCSTM8</name>
-          <file> 7</file>
+          <file> 6</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 9</file>
+          <file> 7</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>ICCSTM8</name>
-          <file> 4 13 11</file>
+          <file> 10 14 12</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 13 11 4</file>
+          <file> 14 12 10</file>
         </tool>
       </inputs>
     </file>
@@ -89,7 +98,7 @@
       <inputs>
         <tool>
           <name>ILINK</name>
-          <file> 2 12 7 6 14</file>
+          <file> 5 13 6 9 11</file>
         </tool>
       </inputs>
     </file>

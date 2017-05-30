@@ -1,17 +1,19 @@
 /* Includes ------------------------------------------------------------------*/
 #include "iostm8l152c6.h"
 #include <intrinsics.h>
+#include <string.h>
 #include "nrf24.h"
 
 #define ADDR_LEN 5
 char pipe_addr[]={0xB5,0xB4,0xB3,0xB2,0xB1};
-#define PAYLOAD_LEN 8
-char data_buf[PAYLOAD_LEN]="";
-
-
+#define PAYLOAD_LEN 32
+#define TOPIC_LEN 23
+char mqtt_topic_value[PAYLOAD_LEN]="/nrf24/B5B4B3B2B1/temp:"; //23
+#define VALUE_LEN 5
+char value[VALUE_LEN]="+25.5";
 
 void init(){
-    // SYS: HSI/2 = 8 MHz TODO!
+  // SYS: HSI/2 = 8 MHz TODO!
   CLK_CKDIVR=0x00;//16 for test
   
   //Enable SPI Clock
@@ -89,8 +91,8 @@ void init(){
   USART1_BRR1 = 0x68;
   USART1_CR2_bit.REN=1;
   USART1_CR2_bit.TEN=1;
-  USART1_CR2_bit.RIEN=1; //Прерывание по приему
-  __enable_interrupt (); // Разрешаем прерывания.
+  USART1_CR2_bit.RIEN=1; //rx int
+  __enable_interrupt ();
  
   // PC7 - Blue LED
   PC_DDR_bit.DDR7 = 1;
@@ -126,7 +128,7 @@ void init_send(){
 
 void main(void)
 {
-  char txok = 1; //set to 1 to renew payload
+  char txok = 1; //set to 1 to upload payload on start
   init();
   PrintString("\nStarted");
 
@@ -136,16 +138,15 @@ void main(void)
   while (1)
   {
     if (txok) {
-      PrintString("\nData: ");
-      for (char i=0; i<PAYLOAD_LEN;i++){
-        PrintByte(i+48);
-        data_buf[i]=i+48; //send ascii codes for digits
-      }
       //if tx successful then clear flag and write new payload
       PrintString("\nClear TX_DS: ");
       NrfWriteReg(STATUS, NrfReadReg(STATUS)|(1<<5));
       PrintByte(NrfReadReg(STATUS));
-      NrfWritePayload(data_buf, PAYLOAD_LEN);
+      //TODO: get new value
+      memcpy(mqtt_topic_value+TOPIC_LEN, value, VALUE_LEN);
+      PrintString("\nData: ");
+      PrintString(mqtt_topic_value);
+      NrfWritePayload(mqtt_topic_value, PAYLOAD_LEN);
     }
     PrintString("\nBefore: STATUS: ");
     PrintByte(NrfReadReg(STATUS));
@@ -163,13 +164,13 @@ void main(void)
     PrintString("\nTxOk: ");
     PrintByte(txok);
     PE_ODR_bit.ODR7 = ~PE_ODR_bit.ODR7; // blink LED
-    Delayms(1000);
+    Delayms(5000);
   }
 }
 
 #pragma vector=USART_R_OR_vector
 __interrupt void USART1_RXE(void)
 {
-  USART1_DR=USART1_DR; //Отправляем тоже, что и приняли (эхо)
+  USART1_DR=USART1_DR; //echo back
 }
 
