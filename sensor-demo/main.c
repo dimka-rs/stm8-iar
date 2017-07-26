@@ -3,6 +3,8 @@
 #include <intrinsics.h>
 #include <string.h>
 #include "nrf24.h"
+#include "ds18b20.h"
+#include "delay.h"
 
 #define ADDR_LEN 5
 char pipe_addr[]={0xB5,0xB4,0xB3,0xB2,0xB1};
@@ -12,9 +14,9 @@ char mqtt_topic_value[PAYLOAD_LEN]="/nrf24/B5B4B3B2B1/temp:"; //23
 #define VALUE_LEN 5
 char value[VALUE_LEN]="+25.5";
 
-void init(){
+void init_hw(){
   // SYS: HSI/2 = 8 MHz TODO!
-  CLK_CKDIVR=0x00;//16 for test
+  CLK_CKDIVR=0x00;//16 MHz at the moment
   
   //Enable SPI Clock
   CLK_PCKENR1_bit.PCKEN14 = 1;
@@ -125,15 +127,45 @@ void init_send(){
   NrfFlushTx();
 }
 
+void init_ds18b20(){
+  /* TL=0, TH=0, CONF=9bit resolution */
+  char buffer[] = {0x00, 0x00, 0x1F};
+  Ds18b20_WriteScratchpad(buffer, 3);
+  Ds18b20_CopyScratchpad();
+}
 
 void main(void)
 {
   char txok = 1; //set to 1 to upload payload on start
-  init();
+  init_hw();
   PrintString("\nStarted");
-
-  init_send();
   
+  /* DS18B20 test loop */
+  init_ds18b20();
+  char buffer[3];
+  char temp;
+  while(1) {
+    Ds18b20_ConvertT();
+    Ds18b20_ReadScratchpad(buffer, 2);
+    PrintString("\nDS18b20: 0x");
+    PrintByte(buffer[1]);
+    PrintByte(buffer[0]);
+    buffer[0]=buffer[0] >> 4;
+    buffer[1]=buffer[1] << 4;
+    temp=buffer[0]+buffer[1];
+    buffer[2]=temp/100;
+    temp=temp%100;
+    buffer[1]=temp/10;
+    temp=temp%10;
+    buffer[0]=temp;
+    PrintString(" temp: ");
+    PrintBuffer(buffer, 3);
+    PE_ODR_bit.ODR7 = ~PE_ODR_bit.ODR7; // blink LED
+    Delayms(1000);
+  }
+
+
+  init_send();  
   /* Infinite loop */
   while (1)
   {

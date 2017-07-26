@@ -4,15 +4,9 @@
 
 #include "nrf24.h"
 #include "iostm8l152c6.h"
+#include "delay.h"
 
 //helpers
-void Delayms(unsigned int n){
-  while (n-- > 0) {
-    unsigned int m = 2000;
-    while (m-- > 0);
-  }
-}
-
 void PrintString(char* data){
   unsigned int i = 0;
   while(data[i] != 0){
@@ -43,9 +37,8 @@ void PrintByte(unsigned char data){
 }
 
 void PrintBuffer(char* buffer, int size){
-  for (unsigned int i=0; i<size; i++) {
-    PrintByte(buffer[i]);
-    PrintString("\n");
+  for (unsigned int i=size; i>0; i--) {
+    PrintByte(buffer[i-1]);
   }
 }
 
