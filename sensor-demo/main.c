@@ -6,13 +6,19 @@
 #include "ds18b20.h"
 #include "delay.h"
 
+#define debug
+
+// NRF24 pipe address
 #define ADDR_LEN 5
 char pipe_addr[]={0xB5,0xB4,0xB3,0xB2,0xB1};
+//payload buffer size
 #define PAYLOAD_LEN 32
+//MQTT topic _and_ empty space for value
 #define TOPIC_LEN 23
-char mqtt_topic_value[PAYLOAD_LEN]="/nrf24/B5B4B3B2B1/temp:"; //23
-#define VALUE_LEN 5
-char value[VALUE_LEN]="+25.5";
+char mqtt_topic_value[PAYLOAD_LEN]="/nrf24/B5B4B3B2B1/temp:"; //23 of 32 bytes
+//MQTT value
+#define VALUE_LEN 6
+char value[VALUE_LEN]="+123.4";
 
 void init_hw(){
   // SYS: HSI/2 = 8 MHz TODO!
@@ -134,52 +140,51 @@ void init_ds18b20(){
   Ds18b20_CopyScratchpad();
 }
 
+void read_ds18b20(char *buffer) {
+  char temp, half, sign;
+  Ds18b20_ConvertT();
+  Ds18b20_ReadScratchpad(buffer, 2);
+#ifdef debug
+  PrintString("\nDS18b20: 0x");
+  PrintByte(buffer[1]);
+  PrintByte(buffer[0]);
+#endif
+  half = buffer[0] & 0x08;  //save 1/2 degree value
+  sign = buffer[1] & 0x80;  //save sign
+  buffer[0]=buffer[0] >> 4; //get rid of decimal part, move low bits to low nibble
+  buffer[1]=buffer[1] << 4; //move high bits to high nibble
+  temp=buffer[0]+buffer[1]; //puth both nibbles into one byte
+  buffer[1]=temp/100+0x30;  //write figures to buffer in ascii
+  temp=temp%100;
+  buffer[2]=temp/10+0x30;
+  temp=temp%10;
+  buffer[3]=temp+0x30;
+  buffer[4]='.'; //add decimal point
+  if (half) buffer[5]='5'; else buffer[5]='0'; //and half value
+  if (sign) buffer[0]='-'; else buffer[0]='+'; //and sign
+#ifdef debug
+  PrintString(" temp: ");
+  PrintBuffer(value, VALUE_LEN);
+  PE_ODR_bit.ODR7 = ~PE_ODR_bit.ODR7; // blink LED
+#endif
+}
+
 void main(void)
 {
-  char txok = 1; //set to 1 to upload payload on start
-  init_hw();
   PrintString("\nStarted");
-  
-  /* DS18B20 test loop */
+  char status = 0;
+  init_hw();
   init_ds18b20();
-  char buffer[3];
-  char temp;
-  while(1) {
-    Ds18b20_ConvertT();
-    Ds18b20_ReadScratchpad(buffer, 2);
-    PrintString("\nDS18b20: 0x");
-    PrintByte(buffer[1]);
-    PrintByte(buffer[0]);
-    buffer[0]=buffer[0] >> 4;
-    buffer[1]=buffer[1] << 4;
-    temp=buffer[0]+buffer[1];
-    buffer[2]=temp/100;
-    temp=temp%100;
-    buffer[1]=temp/10;
-    temp=temp%10;
-    buffer[0]=temp;
-    PrintString(" temp: ");
-    PrintBuffer(buffer, 3);
-    PE_ODR_bit.ODR7 = ~PE_ODR_bit.ODR7; // blink LED
-    Delayms(1000);
-  }
-
-
   init_send();  
   /* Infinite loop */
   while (1)
   {
-    if (txok) {
-      //if tx successful then clear flag and write new payload
-      PrintString("\nClear TX_DS: ");
-      NrfWriteReg(STATUS, NrfReadReg(STATUS)|(1<<5));
-      PrintByte(NrfReadReg(STATUS));
-      //TODO: get new value
-      memcpy(mqtt_topic_value+TOPIC_LEN, value, VALUE_LEN);
-      PrintString("\nData: ");
-      PrintString(mqtt_topic_value);
-      NrfWritePayload(mqtt_topic_value, PAYLOAD_LEN);
-    }
+    read_ds18b20(value);
+    memcpy(mqtt_topic_value+TOPIC_LEN, value, VALUE_LEN);
+    PrintString("\nData: ");
+    PrintString(mqtt_topic_value);
+    NrfWritePayload(mqtt_topic_value, PAYLOAD_LEN);
+    //starting tx
     PrintString("\nBefore: STATUS: ");
     PrintByte(NrfReadReg(STATUS));
     PrintString(". FIFO_STATUS: ");
@@ -187,15 +192,22 @@ void main(void)
     NrfEnable();
     while(!((NrfReadReg(STATUS))&0xF0)); //wait for some flag to be set
     NrfDisable();
-    txok = NrfReadReg(STATUS);
+    status = NrfReadReg(STATUS);
     PrintString("\nAfter:  STATUS: ");
-    PrintByte(txok);
+    PrintByte(status);
     PrintString(". FIFO_STATUS: ");
     PrintByte(NrfReadReg(FIFO_STATUS));
-    txok = txok&(1<<5); //set status only if TX_DS flag is set
-    PrintString("\nTxOk: ");
-    PrintByte(txok);
+    //check flags
+    if (status & (1<<5)) {
+      PrintString("\nTX_DS is set. Resetting");
+      NrfWriteReg(STATUS, NrfReadReg(STATUS)|(1<<5));
+    }
+    if (status & (1<<4)) {
+      PrintString("\nMAX_RT is set. Resetting");
+      NrfWriteReg(STATUS, NrfReadReg(STATUS)|(1<<4));
+    }
     PE_ODR_bit.ODR7 = ~PE_ODR_bit.ODR7; // blink LED
+    PrintString("\n");
     Delayms(5000);
   }
 }
