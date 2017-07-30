@@ -154,14 +154,21 @@ void read_ds18b20(char *buffer) {
   buffer[0]=buffer[0] >> 4; //get rid of decimal part, move low bits to low nibble
   buffer[1]=buffer[1] << 4; //move high bits to high nibble
   temp=buffer[0]+buffer[1]; //puth both nibbles into one byte
+  if (sign) {
+    buffer[0]='-';
+    temp = ~temp; //invert to positive
+    temp += 1;
+  } else {
+    buffer[0]='+';
+  }
   buffer[1]=temp/100+0x30;  //write figures to buffer in ascii
   temp=temp%100;
   buffer[2]=temp/10+0x30;
   temp=temp%10;
   buffer[3]=temp+0x30;
   buffer[4]='.'; //add decimal point
-  if (half) buffer[5]='5'; else buffer[5]='0'; //and half value
-  if (sign) buffer[0]='-'; else buffer[0]='+'; //and sign
+  //if (half) buffer[5]='5'; else buffer[5]='0'; //and half value
+  buffer[5] = half ? '5':'0'; //is it similar to line above?
 #ifdef debug
   PrintString(" temp: ");
   PrintBuffer(value, VALUE_LEN);
