@@ -10,7 +10,7 @@
 void PrintString(char* data){
   unsigned int i = 0;
   while(data[i] != 0){
-    while(!(UART1_SR_bit.TXE));
+    while(!(UART1_SR & (1 << 7))); //check TXE flag
     UART1_DR=data[i];
     i++;
   }

@@ -54,26 +54,27 @@ void init_hw(){
   //Enable USART clock
   CLK_PCKENR1 = CLK_PCKENR1  | (1 << 3); //bit 3 is USART clk
   
-  //PC2: USART1 RX, In, PU, NoInt
-  PC_DDR_bit.DDR2 = 0;
-  PC_CR1_bit.C12 = 1;
-  PC_CR2_bit.C22 = 0;
-  //PC3: USART1 TX, Out, PP, Fast ot PA2?
-  PC_DDR_bit.DDR3 = 1;
-  PC_CR1_bit.C13 = 1;
-  PC_CR2_bit.C23 = 1;
+  //PD6: USART1 RX, In, PU, NoInt
+  PD_DDR_bit.DDR6 = 0;
+  PD_CR1_bit.C16 = 1;
+  PD_CR2_bit.C26 = 0;
+  //PD5: USART1 TX, Out, PP, Fast
+  PD_DDR_bit.DDR5 = 1;
+  PD_CR1_bit.C15 = 1;
+  PD_CR2_bit.C25 = 1;
   // 16000000/9600=1667=0x0683
   UART1_BRR2 = 0x03;
   UART1_BRR1 = 0x68;
   UART1_CR2_bit.REN=1;
   UART1_CR2_bit.TEN=1;
-  UART1_CR2_bit.RIEN=1; //rx int
+//  UART1_CR2_bit.RIEN=1; //rx int
   __enable_interrupt ();
  
   // PB5 - LED
   PB_DDR_bit.DDR5 = 1;
   PB_CR1_bit.C15 = 1;
   PB_CR2_bit.C25 = 0;
+  PB_ODR_bit.ODR5 = 1;
 }
 
 void init_common(){
@@ -142,7 +143,7 @@ void read_ds18b20(char *buffer) {
 
 void main(void)
 {
-  PrintString("\nStarted");
+  //PrintString("\nStarted");
   char status = 0;
   init_hw();
   init_ds18b20();
